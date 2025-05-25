@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 3000;
 const app = express();
 
@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const taskCollection = client.db('taskfolio').collection('tasks')
@@ -32,14 +33,44 @@ async function run() {
         const result = await taskCollection.find().toArray();
         res.send(result)
     })
+    app.get('/api/tasks/:id', async(req, res) => {
+        const id = req.params.id;
+        try {
+            const result = await taskCollection.findOne(
+                {
+                    _id: new ObjectId(id)
+                });
+            if (!result) {
+                return res.status(404).send({ error: 'Task not found' });
+            }
+            res.send(result);
+        } catch (error) {
+            res.status(400).send({ error: 'Invalid ID format' });
+        }
+    })
     app.post('/api/tasks', async(req, res) => {
         const newTask = req.body;
         console.log(newTask)
         const result = await taskCollection.insertOne(newTask)
         res.send(result)
     })
+
+    app.patch('/api/tasks/:id', async (req, res) => {
+        const id = req.params.id;
+        const { _id, ...updateData } = req.body;
+        console.log(updateData)
+        try {
+            const result = await taskCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updateData }
+            );
+            res.send(result);
+        } catch (error) {
+            res.status(500).send({ error: 'Failed to update task' });
+        }
+    });
   } finally {
-    // Ensures that the client will close when you finish/error
+    // Comment out client.close() to keep the connection open
     // await client.close();
   }
 }
