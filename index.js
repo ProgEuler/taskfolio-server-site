@@ -26,7 +26,29 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const taskCollection = client.db('taskfolio').collection('tasks')
+    const userCollection = client.db('taskfolio').collection('users')
 
+    app.get('/api/user/:email', async (req, res) => {
+        const email = req.params.email;
+        try {
+            const result = await userCollection.findOne(
+                {
+                    email: email
+                });
+            if (!result) {
+                return res.status(404).send({ error: 'User not found' });
+            }
+            res.send(result);
+        } catch (error) {
+            res.status(400).send({ error: 'Invalid ID format' });
+        }
+    })
+    app.post('/api/users', async (req, res) => {
+        const newUser = req.body;
+        console.log(newUser)
+        const result = await userCollection.insertOne(newUser)
+        res.send(result)
+    })
     app.get('/api/tasks', async(req, res) => {
         // const cursor = taskCollection.find();
         // const result = await cursor.toArray();
@@ -58,7 +80,7 @@ async function run() {
     app.patch('/api/tasks/:id', async (req, res) => {
         const id = req.params.id;
         const { _id, ...updateData } = req.body;
-        console.log(updateData)
+
         try {
             const result = await taskCollection.updateOne(
                 { _id: new ObjectId(id) },
@@ -67,6 +89,21 @@ async function run() {
             res.send(result);
         } catch (error) {
             res.status(500).send({ error: 'Failed to update task' });
+        }
+    });
+
+    app.delete('/api/tasks/:id', async (req, res) => {
+        const id = req.params.id;
+        try {
+            const result = await taskCollection.deleteOne(
+                { _id: new ObjectId(id) }
+            );
+            if (result.deletedCount === 0) {
+                return res.status(404).send({ error: 'Task not found' });
+            }
+            res.send({ message: 'Task deleted successfully' });
+        } catch (error) {
+            res.status(400).send({ error: 'Invalid ID format' });
         }
     });
   } finally {
