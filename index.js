@@ -43,6 +43,22 @@ async function run() {
             res.status(400).send({ error: 'Invalid ID format' });
         }
     })
+
+    app.patch('/api/user/:email', async (req, res) => {
+        const email = req.params.email;
+        const { _id, ...updateData } = req.body;
+
+        try {
+            const result = await userCollection.updateOne(
+                { email: email },
+                { $set: updateData }
+            );
+            res.send(result);
+            console.log('User updated successfully:', updateData);
+        } catch (error) {
+            res.status(500).send({ error: 'Failed to update user' });
+        }
+    });
     app.post('/api/users', async (req, res) => {
         const newUser = req.body;
         console.log(newUser)
