@@ -1,14 +1,15 @@
 const { ObjectId } = require('mongodb');
 const client = require('../db/mongoClient');
 
-const taskCollection = client.db('taskfolio').collection('tasks');
 
 exports.getAllTasks = async (req, res) => {
+    const taskCollection = client.db('taskfolio').collection('tasks');
     const result = await taskCollection.find().toArray();
     res.send(result);
 };
 
 exports.getTaskById = async (req, res) => {
+    const taskCollection = client.db('taskfolio').collection('tasks');
     const id = req.params.id;
     try {
         const result = await taskCollection.findOne({ _id: new ObjectId(id) });
@@ -20,12 +21,14 @@ exports.getTaskById = async (req, res) => {
 };
 
 exports.createTask = async (req, res) => {
+    const taskCollection = client.db('taskfolio').collection('tasks');
     const newTask = req.body;
     const result = await taskCollection.insertOne(newTask);
     res.send(result);
 };
 
 exports.updateTask = async (req, res) => {
+    const taskCollection = client.db('taskfolio').collection('tasks');
     const id = req.params.id;
     const { _id, ...updateData } = req.body;
     try {
@@ -40,6 +43,7 @@ exports.updateTask = async (req, res) => {
 };
 
 exports.deleteTask = async (req, res) => {
+    const taskCollection = client.db('taskfolio').collection('tasks');
     const id = req.params.id;
     try {
         const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });

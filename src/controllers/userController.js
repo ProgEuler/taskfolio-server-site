@@ -3,6 +3,7 @@ const client = require('../db/mongoClient');
 const userCollection = client.db('taskfolio').collection('users');
 
 exports.getUserByEmail = async (req, res) => {
+    const userCollection = client.db('taskfolio').collection('users');
     const email = req.params.email;
     try {
         const result = await userCollection.findOne({ email });
@@ -14,6 +15,7 @@ exports.getUserByEmail = async (req, res) => {
 };
 
 exports.updateUserByEmail = async (req, res) => {
+    const userCollection = client.db('taskfolio').collection('users');
     const email = req.params.email;
     const { _id, ...updateData } = req.body;
     try {
@@ -28,6 +30,7 @@ exports.updateUserByEmail = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+    const userCollection = client.db('taskfolio').collection('users');
     const newUser = req.body;
     const result = await userCollection.insertOne(newUser);
     res.send(result);
